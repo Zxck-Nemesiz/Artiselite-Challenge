@@ -1,8 +1,10 @@
 import { useEffect } from 'react';
-import './App.css';
 import axios from "axios";
+import Button from './components/Button';
+import ButtonGradient from './assets/ButtonGradient';
+import Header from './components/Header';
 
-function App() {
+const App = () => {
   const fetchAPI = async () => {
     const response = await axios.get("https://localhost:8080");
   }
@@ -12,9 +14,13 @@ function App() {
   }, []);
 
   return (
-    <h1 className="text-3xl font-bold underline">
-      Hello world!
-    </h1>
+    <>      
+      <div className='pt-[4rem] lg:pt-[5rem] overflow-hidden'>
+       <Header />
+      </div>
+      <ButtonGradient />
+    </>
+    
   )
 }
 
