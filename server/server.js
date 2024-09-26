@@ -7,6 +7,8 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
+
+
 app.get("/api", (req, res) => {
     res.json();
 });
