@@ -1,6 +1,6 @@
 // outbound.js
 const express = require('express');
-const runQuery = require('./helpers/runQuery'); // Helper function for query execution
+const runQuery = require('../helpers/runQuery'); // Helper function for query execution
 const router = express.Router();
 
 // Get all outbound records

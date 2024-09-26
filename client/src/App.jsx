@@ -1,27 +1,44 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import axios from "axios";
-import Button from './components/Button';
-import ButtonGradient from './assets/ButtonGradient';
 import Header from './components/Header';
+import Home from './components/Home';
+import Modal from './components/Modal';
+import SignInForm from './components/SignInForm';
+import SignUpForm from './components/SignUpForm';
 
 const App = () => {
-  const fetchAPI = async () => {
-    const response = await axios.get("https://localhost:8080");
+  const [user, setUser] = useState(null);
+  const [isSignInOpen, setIsSignInOpen] = useState(false);
+  const [isSignUpOpen, setIsSignUpOpen] = useState(false);
+
+  const fetchUser = async () => {
+    const response = await axios.get("http://localhost:8080/api/users/current", { withCredentials: true }); 
+    setUser(response.data);
+    console.log("Current user:", response.data)
   }
 
   useEffect(() => {
-    fetchAPI();
+    fetchUser();
   }, []);
 
   return (
-    <>      
-      <div className='pt-[4rem] lg:pt-[5rem] overflow-hidden'>
-       <Header />
+    <>
+      <div className='h-screen overflow-hidden'>
+        <Header user={user} onSignInOpen={() => setIsSignInOpen(true)} />
+        <div className='h-[calc(100vh-4rem)] lg:h-[calc(100vh-5rem)]'>
+          <Home onSignUpOpen={() => setIsSignUpOpen(true)} />
+        </div>
       </div>
-      <ButtonGradient />
-    </>
-    
-  )
-}
 
-export default App
+      <Modal isOpen={isSignInOpen} onClose={() => setIsSignInOpen(false)}>
+        <SignInForm onClose={() => setIsSignInOpen(false)} />
+      </Modal>
+
+      <Modal isOpen={isSignUpOpen} onClose={() => setIsSignUpOpen(false)}>
+        <SignUpForm onClose={() => setIsSignUpOpen(false)} />
+      </Modal>
+    </>
+  );
+};
+
+export default App;
