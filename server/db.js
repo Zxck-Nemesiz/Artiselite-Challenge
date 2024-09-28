@@ -8,7 +8,7 @@ const db = mysql.createConnection({
 })
 
 db.connect(err => {
-    if(err) {
+    if (err) {
         console.error('Error connecting to databse:', err);
         return;
     }

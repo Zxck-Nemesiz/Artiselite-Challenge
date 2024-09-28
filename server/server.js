@@ -9,14 +9,14 @@ const outboundRouter = require('./routes/outbound');
 const inventoryRouter = require('./routes/inventory');
 
 // Middleware
+app.use(express.json());
 app.use(cors());
-app.use(express.json()); 
 
 // Routes
-app.use('/api/users', usersRouter);    
-app.use('/api/inbound', inboundRouter);    
-app.use('/api/outbound', outboundRouter);  
-app.use('/api/inventory', inventoryRouter); 
+app.use('/api/users', usersRouter);
+app.use('/api/inbound', inboundRouter);
+app.use('/api/outbound', outboundRouter);
+app.use('/api/inventory', inventoryRouter);
 
 // Start the server
 app.listen(8080, () => {
