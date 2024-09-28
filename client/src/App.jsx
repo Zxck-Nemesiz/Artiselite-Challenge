@@ -8,6 +8,8 @@ import SignUpForm from './components/SignUpForm';
 import { Route, Routes, useNavigate } from 'react-router-dom';
 import Inventory from './components/Inventory';
 import ButtonGradient from './assets/ButtonGradient'
+import Inbound from './components/Inbound';
+import Outbound from './components/Outbound';
 
 axios.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
@@ -99,6 +101,8 @@ const App = () => {
           <Routes>
             <Route path='/' element={<Home onSignUpOpen={() => setIsSignUpOpen(true)} />} />
             <Route path='/inventory' element={<Inventory />} />
+            <Route path='/inbound' element={<Inbound />} />
+            <Route path='/outbound' element={<Outbound />} />
           </Routes>
         </div>
       </div>

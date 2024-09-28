@@ -16,7 +16,7 @@ router.get('/', (req, res) => {
 // Add new inbound record
 router.post('/', (req, res) => {
     const { product_name, supplier, quantity } = req.body;
-    db.query('INSERT INTO inbound (product_name, supplier, quantity) VALUES (?, ?, ?)', [product_name, supplier, quantity], (err, results) => {
+    db.query('INSERT INTO inbound (product_sku, location, quantity) VALUES (?, ?, ?)', [product_name, supplier, quantity], (err, results) => {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).json({ error: 'Database query failed' });
