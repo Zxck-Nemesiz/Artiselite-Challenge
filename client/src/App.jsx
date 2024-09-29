@@ -11,6 +11,7 @@ import Inventory from './components/Inventory';
 import ButtonGradient from './assets/ButtonGradient';
 import Inbound from './components/Inbound';
 import Outbound from './components/Outbound';
+import UserManagement from './components/UserManagement';
 
 axios.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
@@ -112,6 +113,7 @@ const App = () => {
             <Route path='/inventory' element={<Inventory />} />
             <Route path='/inbound' element={<Inbound />} />
             <Route path='/outbound' element={<Outbound />} />
+            <Route path='/users' element={<UserManagement />} />
           </Routes>
         </div>
       </div>

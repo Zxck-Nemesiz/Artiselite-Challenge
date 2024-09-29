@@ -70,6 +70,27 @@ router.post('/login', (req, res) => {
     });
 });
 
+router.put('/:id', (req, res) => {
+    const { role } = req.body;
+    db.query('UPDATE users SET role = ? WHERE id = ?', [role, req.params.id], (err, results) => {
+        if (err) {
+            console.error('Database error:', err);
+            return res.status(500).json({ error: 'Database query failed' });
+        }
+        res.json({ message: 'User role updated successfully' });
+    });
+});
+
+router.delete('/:id', (req, res) => {
+    db.query('DELETE FROM users WHERE id = ?', [req.params.id], (err, results) => {
+        if (err) {
+            console.error('Database error:', err);
+            return res.status(500).json({ error: 'Database query failed' });
+        }
+        res.json({ message: 'User deleted successfully' });
+    });
+});
+
 router.get('/current', authenticateToken, (req, res) => {
     res.json({ user: req.user });
 });
