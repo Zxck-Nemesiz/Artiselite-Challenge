@@ -55,7 +55,7 @@ const Header = ({ user, onSignInOpen, onSignOut }) => {
   const filteredNavigation = () => {
     if (!user) return [];
     if (user.role === 'operator') {
-      return navigation.filter(item => item.id === 'inbound' || item.id === 'outbound');
+      return navigation.filter(item => item.id === '1' || item.id === '2');
     }
     if (user.role === 'warehouse_manager') {
       return navigation;
@@ -72,7 +72,7 @@ const Header = ({ user, onSignInOpen, onSignOut }) => {
 
         {user && (
           <nav className={`${openNavigation ? "flex" : "hidden"} hidden fixed top-[3rem] left-0 right-0 bottom-0 bg-n-8 lg:static lg:flex lg:mx-auto lg:bg-transparent`}>
-            <div className="relative z-2 flex flex-col items-center justify-center m-auto lg:flex-row">
+            <div className="relative z-2 flex flex-col items-center justify-center m-auto mr-20 lg:flex-row">
               {filteredNavigation().map((item) => (
                 <a key={item.id} href={item.url} onClick={handleClick}
                   className={`block relative font-code text-2xl uppercase text-n-1 transition-colors hover:text-color-1 ${item.onlyMobile ? 'lg:hidden' : ""} px-5 py-5 md:py-6 lg:-mr-0.1 lg:text-xs lg:font-semibold ${item.url === pathname.hash ? 'lg:text-n-1/50' : 'z-2 lg:text-n-1'} lg:leading-4 lg:hover:text-n-1 xl:px-10`}>
@@ -89,7 +89,7 @@ const Header = ({ user, onSignInOpen, onSignOut }) => {
             Sign Out
           </Button>
         ) : (
-          <Button className="hidden lg:flex" onClick={onSignInOpen}>
+          <Button className="hidden lg:flex ml-auto" onClick={onSignInOpen}>
             Sign In
           </Button>
         )}

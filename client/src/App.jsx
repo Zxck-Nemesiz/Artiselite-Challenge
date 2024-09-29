@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
 import Header from './components/Header';
 import Home from './components/Home';
 import Modal from './components/Modal';
@@ -7,7 +8,7 @@ import SignInForm from './components/SignInForm';
 import SignUpForm from './components/SignUpForm';
 import { Route, Routes, useNavigate } from 'react-router-dom';
 import Inventory from './components/Inventory';
-import ButtonGradient from './assets/ButtonGradient'
+import ButtonGradient from './assets/ButtonGradient';
 import Inbound from './components/Inbound';
 import Outbound from './components/Outbound';
 
@@ -27,23 +28,16 @@ const App = () => {
 
   const fetchUser = async () => {
     const token = localStorage.getItem('token');
-
-    if (!token) {
-      console.log('No token found, user not logged in');
-      return;
-    }
+    if (!token) return;
 
     try {
       const response = await axios.get('http://localhost:8080/api/users/current');
       if (response.data && response.data.user) {
         setUser(response.data.user);
         localStorage.setItem('user', JSON.stringify(response.data.user));
-      } else {
-        console.log('No user data in response:', response.data);
       }
     } catch (error) {
-      console.error('Error fetching user:', error);
-      if (error.response && error.response.status === 403) {
+      if (error.response?.status === 403) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         setUser(null);
@@ -60,8 +54,10 @@ const App = () => {
       localStorage.setItem('user', JSON.stringify(user));
       setUser(user);
       setIsSignInOpen(false);
+      const decodedToken = jwtDecode(token);
+      console.log('Login successful, token expires at:', decodedToken.exp);
+      scheduleAutoLogout(decodedToken.exp);
     } catch (error) {
-      console.error('Error during sign-in:', error);
       alert('Invalid credentials. Please try again.');
     }
   };
@@ -73,21 +69,34 @@ const App = () => {
     navigate('/');
   };
 
+  const scheduleAutoLogout = (exp) => {
+    const expirationTime = exp * 1000 - Date.now();
+    if (expirationTime > 0) {
+      console.log(`Scheduling auto logout in ${expirationTime / 1000} seconds.`);
+      setTimeout(() => {
+        handleSignOut();
+        alert('Session expired. Please log in again.');
+      }, expirationTime);
+    }
+  };
+
   const handleSignUp = async (username, password, role) => {
     try {
       await axios.post('http://localhost:8080/api/users', { username, password, role });
       setIsSignUpOpen(false);
       handleSignIn(username, password);
     } catch (error) {
-      console.error('Error during sign-up:', error);
       alert('Error signing up. Please try again.');
     }
   };
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
-    if (storedUser) {
+    const token = localStorage.getItem('token');
+    if (storedUser && token) {
       setUser(JSON.parse(storedUser));
+      const decodedToken = jwtDecode(token);
+      scheduleAutoLogout(decodedToken.exp);
     } else {
       fetchUser();
     }
@@ -108,12 +117,10 @@ const App = () => {
       </div>
       <ButtonGradient />
 
-      {/* Sign-In Modal */}
       <Modal isOpen={isSignInOpen} onClose={() => setIsSignInOpen(false)}>
         <SignInForm onSignIn={handleSignIn} onClose={() => setIsSignInOpen(false)} />
       </Modal>
 
-      {/* Sign-Up Modal */}
       <Modal isOpen={isSignUpOpen} onClose={() => setIsSignUpOpen(false)}>
         <SignUpForm onSignUp={handleSignUp} onClose={() => setIsSignUpOpen(false)} />
       </Modal>

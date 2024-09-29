@@ -12,6 +12,7 @@ const Inventory = () => {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [products, setProducts] = useState([]);
     const [editProduct, setEditProduct] = useState(null);
+    const [selectedEditProductId, setSelectedEditProductId] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
 
     // Fetch products from backend
@@ -35,44 +36,61 @@ const Inventory = () => {
     const handleAddProduct = async (e) => {
         e.preventDefault();
         const newProduct = {
-            name: e.target.name.value,
+            product_name: e.target.name.value,
             quantity: e.target.quantity.value,
-            tags: e.target.tags.value,
+            category: e.target.category.value,
+            supplier: e.target.supplier.value,
         };
 
         try {
             await axios.post('http://localhost:8080/api/inventory', newProduct);
-            fetchProducts();
-            setIsAddOpen(false);
+            fetchProducts(); // Refresh product list
+            setIsAddOpen(false); // Close modal
         } catch (error) {
             console.error('Error adding product:', error);
         }
     };
 
+
     // Edit product
     const handleEditProduct = async (e) => {
         e.preventDefault();
         const updatedProduct = {
-            name: e.target.name.value,
+            product_name: e.target.name.value,
             quantity: e.target.quantity.value,
-            tags: e.target.tags.value,
+            category: e.target.category.value,
+            supplier: e.target.supplier.value,
         };
 
         try {
             await axios.put(`http://localhost:8080/api/inventory/${editProduct.id}`, updatedProduct);
-            fetchProducts();
+            fetchProducts(); // Refresh product list
             setEditProduct(null);
-            setIsEditOpen(false);
+            setIsEditOpen(false); // Close modal
         } catch (error) {
             console.error('Error updating product:', error);
         }
     };
 
+    // Select a product to edit from dropdown
+    const handleSelectEditProduct = (e) => {
+        const selectedProductId = e.target.value;
+        const product = products.find((p) => p.id === parseInt(selectedProductId));
+        setSelectedEditProductId(selectedProductId);
+        setEditProduct(product);
+    };
+
     // Search products
     const handleSearchProduct = async (e) => {
         e.preventDefault();
-        fetchProducts(searchTerm);
-        setIsSearchOpen(false);
+        fetchProducts(searchTerm); // Update product list based on search
+        setIsSearchOpen(false); // Close modal after searching
+    };
+
+    // Reset product list
+    const handleResetSearch = () => {
+        setSearchTerm(""); // Clear search input
+        fetchProducts(); // Fetch all products again
     };
 
     const data = React.useMemo(() => products, [products]);
@@ -81,19 +99,6 @@ const Inventory = () => {
         { Header: 'Product Name', accessor: 'name' },
         { Header: 'Quantity', accessor: 'quantity' },
         { Header: 'Tags', accessor: 'tags' },
-        {
-            Header: 'Actions', Cell: ({ row }) => (
-                <Button
-                    onClick={() => {
-                        setEditProduct(row.original);
-                        setIsEditOpen(true);
-                    }}
-                    className="p-2 text-black"
-                >
-                    Edit
-                </Button>
-            )
-        }
     ], []);
 
     const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable({ columns, data });
@@ -146,7 +151,6 @@ const Inventory = () => {
                                 );
                             })}
                         </tbody>
-
                     </table>
                 </div>
             </div>
@@ -156,15 +160,16 @@ const Inventory = () => {
                 <img src={background} className="w-full h-full object-cover opacity-30" alt="background" />
             </div>
 
-            {/* Add Product Modal */}
+            {/* Add and Edit Product Modal */}
             <Modal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)}>
                 <div>
                     <h2 className="text-xl font-semibold mb-3">Add a New Product</h2>
                     <form onSubmit={handleAddProduct}>
                         <input type="text" name="name" placeholder="Product Name" className="p-2 w-full border rounded-lg mb-3" required />
                         <input type="number" name="quantity" placeholder="Quantity" className="p-2 w-full border rounded-lg mb-3" required />
-                        <input type="text" name="tags" placeholder="Tags" className="p-2 w-full border rounded-lg mb-3" />
-                        <Button type="submit" className="px-6 py-2 bg-green-500 text-white rounded-lg shadow hover:bg-green-600">Add</Button>
+                        <input type="text" name="category" placeholder="Category" className="p-2 w-full border rounded-lg mb-3" />
+                        <input type="text" name="supplier" placeholder="Supplier" className="p-2 w-full border rounded-lg mb-3" />
+                        <Button type="submit" className="px-6 py-2 rounded-lg shadow">Add</Button>
                     </form>
                 </div>
             </Modal>
@@ -174,13 +179,28 @@ const Inventory = () => {
                 <div>
                     <h2 className="text-xl font-semibold mb-3">Edit a Product</h2>
                     <form onSubmit={handleEditProduct}>
-                        <input type="text" name="name" defaultValue={editProduct?.name} placeholder="Product Name" className="p-2 w-full border rounded-lg mb-3" required />
-                        <input type="number" name="quantity" defaultValue={editProduct?.quantity} placeholder="Quantity" className="p-2 w-full border rounded-lg mb-3" required />
-                        <input type="text" name="tags" defaultValue={editProduct?.tags} placeholder="Tags" className="p-2 w-full border rounded-lg mb-3" />
-                        <Button type="submit" className="px-6 py-2 bg-yellow-500 text-white rounded-lg shadow hover:bg-yellow-600">Update</Button>
+                        {/* Dropdown to select a product */}
+                        <select onChange={handleSelectEditProduct} className="p-2 w-full border rounded-lg mb-3" value={selectedEditProductId || ''}>
+                            <option value="">Select a product to edit</option>
+                            {products.map((product) => (
+                                <option key={product.id} value={product.id}>
+                                    {product.name}
+                                </option>
+                            ))}
+                        </select>
+                        {editProduct && (
+                            <>
+                                <input type="text" name="name" defaultValue={editProduct.product_name} placeholder="Product Name" className="p-2 w-full border rounded-lg mb-3" required />
+                                <input type="number" name="quantity" defaultValue={editProduct.quantity} placeholder="Quantity" className="p-2 w-full border rounded-lg mb-3" required />
+                                <input type="text" name="category" defaultValue={editProduct.category} placeholder="Category" className="p-2 w-full border rounded-lg mb-3" />
+                                <input type="text" name="supplier" defaultValue={editProduct.supplier} placeholder="Supplier" className="p-2 w-full border rounded-lg mb-3" />
+                            </>
+                        )}
+                        <Button type="submit" className="px-6 py-2 rounded-lg shadow">Update</Button>
                     </form>
                 </div>
             </Modal>
+
 
             {/* Search Product Modal */}
             <Modal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)}>
@@ -189,15 +209,17 @@ const Inventory = () => {
                     <form onSubmit={handleSearchProduct}>
                         <input
                             type="text"
-                            placeholder="Search by name or tags"
+                            placeholder="Search by name, category, or supplier"
                             className="p-2 w-full border rounded-lg mb-3"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
-                        <Button type="submit" className="px-6 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600">Search</Button>
+                        <Button type="submit" className="px-6 py-2 rounded-lg shadow">Search</Button>
+                        <Button onClick={handleResetSearch} className="px-6 py-2 mt-3 ml-5 rounded-lg">Reset</Button>
                     </form>
                 </div>
             </Modal>
+
         </Section>
     );
 };

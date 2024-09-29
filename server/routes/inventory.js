@@ -1,10 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db'); // Directly import your database connection
+const db = require('../db');
 
-// Get all inventory items
+// Get all inventory items or filter by search query
 router.get('/', (req, res) => {
-    db.query('SELECT * FROM inventory', [], (err, results) => {
+    const { search } = req.query;
+    let query = 'SELECT *, CONCAT(category, ", ", supplier) AS tags FROM inventory';
+    const queryParams = [];
+
+    if (search) {
+        query += ' WHERE name LIKE ? OR category LIKE ? OR supplier LIKE ?';
+        queryParams.push(`%${search}%`, `%${search}%`, `%${search}%`);
+    }
+
+    db.query(query, queryParams, (err, results) => {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).json({ error: 'Database query failed' });
@@ -15,8 +24,9 @@ router.get('/', (req, res) => {
 
 // Add a new product
 router.post('/', (req, res) => {
-    const { product_name, quantity } = req.body;
-    db.query('INSERT INTO inventory (product_name, quantity) VALUES (?, ?)', [product_name, quantity], (err, results) => {
+    const { product_name, quantity, category, supplier } = req.body;
+    db.query('INSERT INTO inventory (product_name, quantity, category, supplier) VALUES (?, ?, ?, ?)', 
+        [product_name, quantity, category, supplier], (err, results) => {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).json({ error: 'Database query failed' });
@@ -27,8 +37,9 @@ router.post('/', (req, res) => {
 
 // Update a product
 router.put('/:id', (req, res) => {
-    const { product_name, quantity } = req.body;
-    db.query('UPDATE inventory SET product_name = ?, quantity = ? WHERE id = ?', [product_name, quantity, req.params.id], (err, results) => {
+    const { product_name, quantity, category, supplier } = req.body;
+    db.query('UPDATE inventory SET product_name = ?, quantity = ?, category = ?, supplier = ? WHERE id = ?', 
+        [product_name, quantity, category, supplier, req.params.id], (err, results) => {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).json({ error: 'Database query failed' });
