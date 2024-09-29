@@ -15,7 +15,7 @@ This project is a warehouse management system built with **React** for the front
 1. **Clone the repository**:
 
    ```bash
-   git clone https://github.com/your-username/warehouse-management.git
+   git clone https://github.com/Zxck-Nemesiz/warehouse-management.git
    cd warehouse-management
 
 2. **Install dependencies**:
