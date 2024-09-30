@@ -6,12 +6,12 @@ const SignInForm = ({ onSignIn, onClose }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSignIn(username, password); // Call the onSignIn function passed from App.jsx
+    onSignIn(username, password);
   };
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
-      <h2 className="text-2xl font-semibold text-white text-center mb-4">Sign In</h2>
+      <h2 className="text-2xl font-semibold text-white text-center mb-4">Login Page</h2>
       <input
         type="text"
         placeholder="Username"

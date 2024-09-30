@@ -62,12 +62,17 @@ const UserManagement = () => {
         fetchUsers();
     }, []);
 
+    const roleDisplayMap = {
+        "warehouse_manager": "Warehouse Manager",
+        "operator": "Operator"
+      };
+
     // React Table setup
     const data = React.useMemo(() => users, [users]);
 
     const columns = React.useMemo(() => [
         { Header: 'Username', accessor: 'username' },
-        { Header: 'Role', accessor: 'role' },
+        { Header: 'Role', accessor: 'role', Cell: ({ value }) => roleDisplayMap[value] || value },
         {
             Header: 'Actions',
             Cell: ({ row }) => (
@@ -156,30 +161,30 @@ const UserManagement = () => {
             {/* Add User Modal */}
             <Modal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)}>
                 <div>
-                    <h2 className="text-xl font-semibold mb-3">Add a New User</h2>
+                    <h2 className="text-xl font-semibold mb-7">Add a New User</h2>
                     <form onSubmit={handleAddUser}>
                         <input
                             type="text"
                             placeholder="Username"
-                            className="p-2 w-full border rounded-lg mb-3"
+                            className="p-2 w-[85%] border rounded-lg mb-3"
                             required
                             onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
                         />
                         <input
                             type="password"
                             placeholder="Password"
-                            className="p-2 w-full border rounded-lg mb-3"
+                            className="p-2 w-[85%] border rounded-lg mb-3"
                             required
                             onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
                         />
                         <select
-                            className="p-2 w-full border rounded-lg mb-3"
+                            className="p-2 w-[85%] border rounded-lg mb-3"
                             onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
                         >
                             <option value="operator">Operator</option>
                             <option value="warehouse_manager">Warehouse Manager</option>
                         </select>
-                        <Button type="submit" className="px-6 py-2 bg-green-500 text-white rounded-lg shadow">
+                        <Button type="submit" className="px-6 py-2 text-white rounded-lg shadow mt-3">
                             Add
                         </Button>
                     </form>
@@ -189,17 +194,17 @@ const UserManagement = () => {
             {/* Edit User Role Modal */}
             <Modal isOpen={isEditOpen} onClose={() => setIsEditOpen(false)}>
                 <div>
-                    <h2 className="text-xl font-semibold mb-3">Edit User Role</h2>
+                    <h2 className="text-xl font-semibold mb-7">Edit User Role</h2>
                     <form onSubmit={handleEditUser}>
                         <select
-                            className="p-2 w-full border rounded-lg mb-3"
+                            className="p-2 w-[85%] border rounded-lg mb-3"
                             value={editUser?.role}
                             onChange={(e) => setEditUser({ ...editUser, role: e.target.value })}
                         >
                             <option value="operator">Operator</option>
                             <option value="warehouse_manager">Warehouse Manager</option>
                         </select>
-                        <Button type="submit" className="px-6 py-2 bg-yellow-500 text-white rounded-lg shadow">
+                        <Button type="submit" className="px-6 py-2 text-white rounded-lg shadow mt-3">
                             Update
                         </Button>
                     </form>

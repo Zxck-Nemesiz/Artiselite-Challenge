@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import Section from "./Section";
 import { useTable } from 'react-table';
-import Section from './Section';
-import Button from './Button';
-import Modal from './Modal';
+import Button from "./Button";
+import Modal from "./Modal";
 import axios from 'axios';
-import background from '../images/6195005.jpg';
+import background from "../images/6195005.jpg";
 
 const Outbound = () => {
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const [outboundProducts, setOutboundProducts] = useState([]);
+  const [editProduct, setEditProduct] = useState(null);
 
   // Fetch outbound products from backend
   const fetchOutboundProducts = async () => {
@@ -20,52 +22,90 @@ const Outbound = () => {
     }
   };
 
-  // Add new outbound product
-  const handleAddOutboundProduct = async (e) => {
+  // Fetch products on component mount
+  useEffect(() => {
+    fetchOutboundProducts();
+  }, []);
+
+  // Add new product
+  const handleAddProduct = async (e) => {
     e.preventDefault();
     const newProduct = {
-      product_name: e.target.product_name.value,
-      customer: e.target.customer.value,
+      product_sku: e.target.product_sku.value,
+      destination: e.target.destination.value,
       quantity: e.target.quantity.value,
     };
 
     try {
       await axios.post('http://localhost:8080/api/outbound', newProduct);
-      fetchOutboundProducts(); // Refresh product list
-      setIsAddOpen(false); // Close modal
+      fetchOutboundProducts();
+      setIsAddOpen(false);
     } catch (error) {
       console.error('Error adding product:', error);
     }
   };
 
-  // Fetch outbound products on component mount
-  useEffect(() => {
-    fetchOutboundProducts();
-  }, []);
+  // Edit product
+  const handleEditProduct = async (e) => {
+    e.preventDefault();
+    const updatedProduct = {
+      product_sku: e.target.product_sku.value,
+      destination: e.target.destination.value,
+      quantity: e.target.quantity.value,
+    };
 
-  // React Table setup
+    try {
+      await axios.put(`http://localhost:8080/api/outbound/${editProduct.id}`, updatedProduct);
+      fetchOutboundProducts();
+      setEditProduct(null);
+      setIsEditOpen(false);
+    } catch (error) {
+      console.error('Error updating product:', error);
+    }
+  };
+
   const data = React.useMemo(() => outboundProducts, [outboundProducts]);
 
   const columns = React.useMemo(() => [
-    { Header: 'Product Name', accessor: 'product_sku' },
-    { Header: 'Customer', accessor: 'destination' },
+    { Header: 'Product SKU', accessor: 'product_sku' },
+    { Header: 'Destination', accessor: 'destination' },
     { Header: 'Quantity', accessor: 'quantity' },
+    { Header: 'Reference', accessor: 'reference' }, 
+    { Header: 'Date Shipped', accessor: 'date_shipped' }, 
+    {
+      Header: 'Actions',
+      Cell: ({ row }) => (
+        <Button
+          onClick={() => {
+            setEditProduct(row.original);
+            setIsEditOpen(true);
+          }}
+          className="p-2 text-n-8"
+        >
+          Edit
+        </Button>
+      )
+    }
   ], []);
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable({ columns, data });
 
   return (
-    <Section className="relative flex items-center justify-center pt-[10rem] -mt-[4]">
+    <Section className="pt-[10rem] -mt-[4] relative flex items-center justify-center">
       <div className="container mx-auto text-center z-10">
-        <h1 className="text-4xl font-semibold mb-6">Outbound Management</h1>
-        <p className="text-lg mb-10">Track outgoing products and update inventory.</p>
+        <div className="mb-12">
+          <h1 className="text-4xl font-semibold mb-6">Outbound Management</h1>
+        </div>
 
-        <Button onClick={() => setIsAddOpen(true)} white className="px-6 py-2 bg-pink-500 text-black rounded-lg shadow hover:bg-pink-600 transition">
-          Add Outbound Product
-        </Button>
+        {/* Buttons */}
+        <div className="flex justify-center space-x-6 mb-10">
+          <Button onClick={() => setIsAddOpen(true)} white className="px-6 py-2 bg-green-500 rounded-lg shadow hover:bg-green-600 transition">
+            Add Product
+          </Button>
+        </div>
 
         {/* React Table */}
-        <div className="mt-10 shadow-lg rounded-lg overflow-hidden bg-white">
+        <div className="shadow-lg rounded-lg overflow-x-auto max-h-[500px] overflow-y-auto custom-scrollbar bg-gray-800">
           <table {...getTableProps()} className="min-w-full divide-y divide-gray-200 border border-gray-300">
             <thead className="bg-gray-100">
               {headerGroups.map(headerGroup => (
@@ -96,20 +136,33 @@ const Outbound = () => {
         </div>
       </div>
 
-      {/* Background */}
+      {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <img src={background} className="w-full h-full object-cover opacity-30" alt="background" />
       </div>
 
-      {/* Add Outbound Product Modal */}
+      {/* Add Product Modal */}
       <Modal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)}>
         <div>
-          <h2 className="text-xl font-semibold mb-3">Add Outbound Product</h2>
-          <form onSubmit={handleAddOutboundProduct}>
-            <input type="text" name="product_name" placeholder="Product Name" className="p-2 w-full border rounded-lg mb-3" required />
-            <input type="text" name="customer" placeholder="Customer" className="p-2 w-full border rounded-lg mb-3" required />
-            <input type="number" name="quantity" placeholder="Quantity" className="p-2 w-full border rounded-lg mb-3" required />
-            <Button type="submit" className="px-6 py-2 text-white rounded-lg shadow">Add</Button>
+          <h2 className="text-xl font-semibold mb-7">Add a New Product</h2>
+          <form onSubmit={handleAddProduct}>
+            <input type="text" name="product_sku" placeholder="Product SKU" className="p-2 w-[85%] border rounded-lg mb-3" required />
+            <input type="text" name="destination" placeholder="Destination" className="p-2 w-[85%] border rounded-lg mb-3" required />
+            <input type="number" name="quantity" placeholder="Quantity" className="p-2 w-[85%] border rounded-lg mb-3" required />
+            <Button type="submit" className="px-6 py-2 rounded-lg shadow mt-3">Add</Button>
+          </form>
+        </div>
+      </Modal>
+
+      {/* Edit Product Modal */}
+      <Modal isOpen={isEditOpen} onClose={() => setIsEditOpen(false)}>
+        <div>
+          <h2 className="text-xl font-semibold mb-7">Edit a Product</h2>
+          <form onSubmit={handleEditProduct}>
+            <input type="text" name="product_sku" defaultValue={editProduct?.product_sku} placeholder="Product SKU" className="p-2 w-[85%] border rounded-lg mb-3" required />
+            <input type="text" name="destination" defaultValue={editProduct?.destination} placeholder="Destination" className="p-2 w-[85%] border rounded-lg mb-3" required />
+            <input type="number" name="quantity" defaultValue={editProduct?.quantity} placeholder="Quantity" className="p-2 w-[85%] border rounded-lg mb-3" required />
+            <Button type="submit" className="px-6 py-2 rounded-lg shadow mt-3">Update</Button>
           </form>
         </div>
       </Modal>

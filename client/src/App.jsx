@@ -5,7 +5,6 @@ import Header from './components/Header';
 import Home from './components/Home';
 import Modal from './components/Modal';
 import SignInForm from './components/SignInForm';
-import SignUpForm from './components/SignUpForm';
 import { Route, Routes, useNavigate } from 'react-router-dom';
 import Inventory from './components/Inventory';
 import ButtonGradient from './assets/ButtonGradient';
@@ -24,7 +23,6 @@ axios.interceptors.request.use((config) => {
 const App = () => {
   const [user, setUser] = useState(null);
   const [isSignInOpen, setIsSignInOpen] = useState(false);
-  const [isSignUpOpen, setIsSignUpOpen] = useState(false);
   const navigate = useNavigate();
 
   const fetchUser = async () => {
@@ -81,16 +79,6 @@ const App = () => {
     }
   };
 
-  const handleSignUp = async (username, password, role) => {
-    try {
-      await axios.post('http://localhost:8080/api/users', { username, password, role });
-      setIsSignUpOpen(false);
-      handleSignIn(username, password);
-    } catch (error) {
-      alert('Error signing up. Please try again.');
-    }
-  };
-
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     const token = localStorage.getItem('token');
@@ -109,7 +97,7 @@ const App = () => {
         <Header user={user} onSignInOpen={() => setIsSignInOpen(true)} onSignOut={handleSignOut} />
         <div className="h-[calc(100vh-4rem)] lg:h-[calc(100vh-5rem)]">
           <Routes>
-            <Route path='/' element={<Home onSignUpOpen={() => setIsSignUpOpen(true)} />} />
+            <Route path='/' element={<Home user={user} />} />
             <Route path='/inventory' element={<Inventory />} />
             <Route path='/inbound' element={<Inbound />} />
             <Route path='/outbound' element={<Outbound />} />
@@ -121,10 +109,6 @@ const App = () => {
 
       <Modal isOpen={isSignInOpen} onClose={() => setIsSignInOpen(false)}>
         <SignInForm onSignIn={handleSignIn} onClose={() => setIsSignInOpen(false)} />
-      </Modal>
-
-      <Modal isOpen={isSignUpOpen} onClose={() => setIsSignUpOpen(false)}>
-        <SignUpForm onSignUp={handleSignUp} onClose={() => setIsSignUpOpen(false)} />
       </Modal>
     </>
   );

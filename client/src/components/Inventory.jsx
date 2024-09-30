@@ -11,7 +11,7 @@ const Inventory = () => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [products, setProducts] = useState([]);
-  const [editProduct, setEditProduct] = useState(null); // Add state for the product to edit
+  const [editProduct, setEditProduct] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   // Fetch products from backend
@@ -37,7 +37,8 @@ const Inventory = () => {
     const newProduct = {
       name: e.target.name.value,
       quantity: e.target.quantity.value,
-      tags: e.target.tags.value,
+      category: e.target.category.value,
+      supplier: e.target.supplier.value
     };
 
     try {
@@ -55,12 +56,14 @@ const Inventory = () => {
     const updatedProduct = {
       name: e.target.name.value,
       quantity: e.target.quantity.value,
-      tags: e.target.tags.value,
+      category: e.target.category.value,
+      supplier: e.target.supplier.value,
     };
 
     try {
       await axios.put(`http://localhost:8080/api/inventory/${editProduct.id}`, updatedProduct);
       fetchProducts();
+      setEditProduct(null);
       setIsEditOpen(false);
     } catch (error) {
       console.error('Error updating product:', error);
@@ -71,7 +74,7 @@ const Inventory = () => {
   const handleDeleteProduct = async (id) => {
     try {
       await axios.delete(`http://localhost:8080/api/inventory/${id}`);
-      fetchProducts(); // Refresh product list after deletion
+      fetchProducts(); // Refresh product list
     } catch (error) {
       console.error('Error deleting product:', error);
     }
@@ -84,20 +87,40 @@ const Inventory = () => {
     setIsSearchOpen(false);
   };
 
+  // Reset search
+  const handleResetSearch = () => {
+    setSearchTerm("");
+    fetchProducts();
+    setIsSearchOpen(false);
+  };
+
   const data = React.useMemo(() => products, [products]);
 
   const columns = React.useMemo(() => [
     { Header: 'Product Name', accessor: 'name' },
     { Header: 'Quantity', accessor: 'quantity' },
-    { Header: 'Tags', accessor: 'tags' },
+    { Header: 'Category', accessor: 'category' },
+    { Header: 'Supplier', accessor: 'supplier' },
     {
-      Header: 'Actions', Cell: ({ row }) => (
-        <Button
-          onClick={() => handleDeleteProduct(row.original.id)}
-          className="ml-2 px-4 py-2 text-n-8 rounded-lg shadow transition"
-        >
-          Delete
-        </Button>
+      Header: 'Actions',
+      Cell: ({ row }) => (
+        <div className="flex justify-center">
+          <Button
+            onClick={() => {
+              setEditProduct(row.original);
+              setIsEditOpen(true);
+            }}
+            className="p-2 text-n-8 rounded-md"
+          >
+            Edit
+          </Button>
+          <Button
+            onClick={() => handleDeleteProduct(row.original.id)}
+            className="p-2 text-n-8 ml-2 rounded-md"
+          >
+            Delete
+          </Button>
+        </div>
       )
     }
   ], []);
@@ -115,9 +138,6 @@ const Inventory = () => {
         <div className="flex justify-center space-x-6 mb-10">
           <Button onClick={() => setIsAddOpen(true)} white className="px-6 py-2 bg-green-500 rounded-lg shadow hover:bg-green-600 transition">
             Add Product
-          </Button>
-          <Button onClick={() => setIsEditOpen(true)} white className="px-6 py-2 bg-yellow-500 rounded-lg shadow hover:bg-yellow-600 transition">
-            Edit Product
           </Button>
           <Button onClick={() => setIsSearchOpen(true)} white className="px-6 py-2 bg-blue-500 rounded-lg shadow hover:bg-blue-600 transition">
             Search Product
@@ -164,12 +184,13 @@ const Inventory = () => {
       {/* Add Product Modal */}
       <Modal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)}>
         <div>
-          <h2 className="text-xl font-semibold mb-3">Add a New Product</h2>
+          <h2 className="text-xl font-semibold mb-7">Add a New Product</h2>
           <form onSubmit={handleAddProduct}>
-            <input type="text" name="name" placeholder="Product Name" className="p-2 w-full border rounded-lg mb-3" required />
-            <input type="number" name="quantity" placeholder="Quantity" className="p-2 w-full border rounded-lg mb-3" required />
-            <input type="text" name="tags" placeholder="Tags (category, supplier)" className="p-2 w-full border rounded-lg mb-3" />
-            <Button type="submit" className="px-6 py-2 rounded-lg shadow">Add</Button>
+            <input type="text" name="name" placeholder="Product Name" className="p-2 w-[85%] border rounded-lg mb-3" required />
+            <input type="number" name="quantity" placeholder="Quantity" className="p-2 w-[85%] border rounded-lg mb-3" required />
+            <input type="text" name="category" placeholder="Category" className="p-2 w-[85%] border rounded-lg mb-3" required />
+            <input type="text" name="supplier" placeholder="Supplier" className="p-2 w-[85%] border rounded-lg mb-3" required />
+            <Button type="submit" className="px-6 py-2 rounded-lg shadow mt-3">Add</Button>
           </form>
         </div>
       </Modal>
@@ -177,32 +198,38 @@ const Inventory = () => {
       {/* Edit Product Modal */}
       <Modal isOpen={isEditOpen} onClose={() => setIsEditOpen(false)}>
         <div>
-          <h2 className="text-xl font-semibold mb-3">Edit a Product</h2>
+          <h2 className="text-xl font-semibold mb-7">Edit a Product</h2>
           <form onSubmit={handleEditProduct}>
-            <input type="text" name="name" defaultValue={editProduct?.name} placeholder="Product Name" className="p-2 w-full border rounded-lg mb-3" required />
-            <input type="number" name="quantity" defaultValue={editProduct?.quantity} placeholder="Quantity" className="p-2 w-full border rounded-lg mb-3" required />
-            <input type="text" name="tags" defaultValue={editProduct?.tags} placeholder="Tags (category, supplier)" className="p-2 w-full border rounded-lg mb-3" />
-            <Button type="submit" className="px-6 py-2 rounded-lg shadow">Update</Button>
+            <input type="text" name="name" defaultValue={editProduct?.name} placeholder="Product Name" className="p-2 w-[85%] border rounded-lg mb-3" required />
+            <input type="number" name="quantity" defaultValue={editProduct?.quantity} placeholder="Quantity" className="p-2 w-[85%] border rounded-lg mb-3" required />
+            <input type="text" name="category" defaultValue={editProduct?.category} placeholder="Category" className="p-2 w-[85%] border rounded-lg mb-3" required />
+            <input type="text" name="supplier" defaultValue={editProduct?.supplier} placeholder="Supplier" className="p-2 w-[85%] border rounded-lg mb-3" required />
+            <Button type="submit" className="px-6 py-2 rounded-lg shadow mt-3">Update</Button>
           </form>
         </div>
       </Modal>
 
       {/* Search Product Modal */}
       <Modal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)}>
-        <div>
-          <h2 className="text-xl font-semibold mb-3">Search for a Product</h2>
+        <div className='w-[85%]'>
+          <h2 className="text-xl font-semibold mb-3 text-center">Search for a Product</h2>
           <form onSubmit={handleSearchProduct}>
             <input
               type="text"
-              placeholder="Search by name, category, or supplier"
-              className="p-2 w-full border rounded-lg mb-3"
+              placeholder="Search by name, SKU, category, or location"
+              className="p-2 w-full border rounded-lg mb-8 mt-5"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <Button type="submit" className="px-6 py-2 rounded-lg shadow">Search</Button>
+            <div className="flex justify-center space-x-4">
+              <Button type="submit" className="px-6 py-2 rounded-lg shadow">Search</Button>
+              <Button onClick={handleResetSearch} className="px-6 py-2 rounded-lg shadow">Reset</Button>
+            </div>
           </form>
         </div>
       </Modal>
+
+
     </Section>
   );
 };
